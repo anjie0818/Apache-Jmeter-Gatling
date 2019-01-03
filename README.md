@@ -8,3 +8,6 @@ JMeter基础知识
 Web性能测试脚本的录制与开发
 ##### Database performance test script development
 数据库性能测试脚本开发
+##### Test element
+测试元件     
+
