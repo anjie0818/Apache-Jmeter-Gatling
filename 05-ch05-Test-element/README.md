@@ -77,21 +77,30 @@ Test Fragment 【右键 Test Plan - Add - Test Fragment - Test Fragment】
 ### Jmeter配置元件
 * 初始化（采样器之前初始化）默认值和变量，以便后续采样器使用。
 #### CSV Data Set Config
-
+* 作用：从文件中读取数据行，*拆分*存储到指定变量中
+* 优点：从文件中读取数据行，要比每次运行生成数据省CPU和内存
+* 【注】:此配置的变量不可再JDBC Config等元件中引用，因为JDBC中参数的使用是在初始化阶段，此时CSV参数还没有初始化完成
 * 参数讲解
     * Filename:文件名，指保存信息的文件目录，可以相对或者绝对路径(比如：D:\ceshi.Txt)
     * File encoding:csv文件编码，可以不填
     * Variable Names:变量名，多个变量用“,”分开。变量使用格式${OA_VendingMachineNum}和${Name}
+        * jmeter2.3.4之后支持CSV文件第一行为列名，此时Variable Names需为空
     * Delimiter:csv文件中的分隔符（用”\t”代替tab键）（一般情况下，分隔符为英文逗号）
-    * Allow quoted data：是否允许引用数据（尚不清楚）
+    * Allow quoted data：是否允许引用数据【即：双引号限定文本[提取出来的是双引号内部的数据，不会将双引号提取出来]；】
     * Recycle on EOF ：到了文件尾处，是否循环读取参数，选项：true和false。因为CSV Data Set Config一次读入一行，分割后存入若干变量交给一个线程，如果线程数超过文本的记录行数，那么可以选择从头再次读入
     * Stop thread on EOF：到了文件尾处，是否停止线程，选项：true和false
         * 当Recycle on EOF 选择true时，Stop thread on EOF选择true和false无任何意义，通俗的讲，在前面控制了不停的循环读取，后面再来让stop或run没有任何意义
         * 当Recycle on EOF 选择flase时，Stop thread on EOF选择true，线程4个，参数3个，那么只会请求3次
         * 当Recycle on EOF 选择flase时，Stop thread on EOF选择flase，线程4个，参数3个，那么会请求4次，但第4次没有参数可取，不让循环，所以第4次请求错误
-    * 
+    * Sharing Mode: 设置是否线程共享
+        * 如果您希望每个线程都有自己的一组值，那么您将需要创建一组文件，每个线程一个。例如test1.csv，test2.csv，...，test n .csv。使用文件名 test {$ __ threadNum} .csv并将“ 共享模式 ”设置为“ 当前线程 ”。
+#### FTP Request Defaults
+#### DNS Cache Manager
+#### HTTP Authorization Manager（HTTP授权管理器）
 
-
+#### HTTP Cache Manager（HTTP缓存管理器）
+#### HTTP Cookie Manager（HTTP Cookie管理器）
+#### HTTP Header Manager（HTTP头信息管理器）
      
   
   
