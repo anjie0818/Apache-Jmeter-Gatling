@@ -97,10 +97,77 @@ Test Fragment 【右键 Test Plan - Add - Test Fragment - Test Fragment】
 #### FTP Request Defaults
 #### DNS Cache Manager
 #### HTTP Authorization Manager（HTTP授权管理器）
-
+* 【注】：一个采样器的作用域内存在多个授权管理器，采样器无法确定采用哪个授权管理器
+* 用途：针对web页面服务端校验限制进行*认证*
+* 参数如下：
+    ![](../images/Autoorization.png)
 #### HTTP Cache Manager（HTTP缓存管理器）
+* 参数讲解：
+    * clear cache each iteration?（每次迭代清空缓存）:如果选择该项，则该属性管理器下的所有Sampler每次执行时都会清除缓存；
+    * Use Cache-Control/Expires header when processing GET requests:在处理GET请求时使用缓存/过期信息头；
+    * Max Number of elements in cache（缓存中的最大元素数）:默认数值为5000，当然可以根据需要自行修改；
+```
+PS：如果Test Plan中某个Sampler请求的元素是被缓存的元素，则Test Plan在运行过程中会直接从Cache中读取元素，这样得到的返回值就会是空。
+在这种情况下，如果为该Sampler设置了断言检查响应体中的指定内容是否存在，该断言就会失败！
+为test plan增加该属性管理器后，test plan运行过程中会使用Last-Modified、ETag和Expired等决定是否从Cache中获取对应元素。
+Cache：一般指的是浏览器的缓存
+Last-Modified：文件在服务端最后被修改的时间
+ETag：在HTTP协议规格说明中定义为：被请求变量的实体标记
+Expired：给出的日期/时间之后；一般结合Last-Modified一起使用，用于控制请求文件的有效时间
+PS：上面提到的几个字段，都是HTTP协议里面的报文首部的字段，感兴趣的请自行查阅相关内容，或可参考这篇博客：https://blog.csdn.net/eroswang/article/details/8302191
+浏览器缓存详解
+```
 #### HTTP Cookie Manager（HTTP Cookie管理器）
+* 【注】cookie不会在配置元件中展示，只会在结果树中展示
+*  可以手动添加cookie，此时cookie会被所有线程共享
+* 参数讲解：
+    * Clear cookie each iteration?（每次迭代时清除自己会话区域的所有cookie）；
+    * Implementation：实现方式； 
+    * Cookie Policy：cookie的管理策略，建议选择compatibility,兼容性强；
+* 对于JMeter来说，一个test plan只能有一个cookie管理器。因为当多个magager存在时，JMeter没有方法来指定使用那个manager；
+  同时，一个cookie manager中的存储的cookie也不能被其他cookie manager所引用，所以同一个计划中不建议使用多个cookie manager；
+  如果你想让JMeter的cookie manager支持跨域，  修改JMeter.property :CookieManager.check.cookies=false；
 #### HTTP Header Manager（HTTP头信息管理器）
+[博客链接](https://www.cnblogs.com/gezirui/p/9328276.html)
+### JMeter断言
+* 作用：对采样进行额外的检查
+* 作用域：对相同作用域的每个采样进行检查，为确保断言针对指定采样器，将其设置为采样器的子项
+####  响应断言（Response Assertion）
+* 通过断言控制面板，可以添加模式字符串与*响应的各个域*进行比较
+    * 模式字符串：Contains,Matches---per5风格的正则表达式
+                  Equals,Substring---纯文本，区分大小写
+* 参数：
+    ![](../images/Assert1.png)
+    ![](../images/Assert2.png)
+#### Duration Assertion
+* 测试：是否给定时间内接受响应
+#### Size Assertion
+* 测试每个响应是否包含正确的字节数
+#### Xml Assertion
+* 测试每个响应是否包含正确XML文档，不验证DTD或Schema
+#### BeanShell Assertion
+* 可以使用BeanShell Script来检查断言
+[博客链接](https://www.cnblogs.com/fengpingfan/p/4762068.html)
+#### MD5Hex Assertion
+* 检查响应的MD5 hash
+#### HTML Assertion
+* 使用JTidy检查响应数据的HTML语法
+    ![](../images/HTML.png)
+#### XPath Assertion
+#### XML Schema Assertion
+#### BSF Assertion
+#### JSR223 Assertion
+#### Compare Assertion
+* 压测不使用，功能测试才使用
+#### SMIME Assertion
+### Jmeter定时器
+### Jmeter前置处理器
+### Jmeter后置处理器
+### Jmeter采样器
+### Jmeter其他测试元件
+#### Test Plan
+
+
      
   
   
