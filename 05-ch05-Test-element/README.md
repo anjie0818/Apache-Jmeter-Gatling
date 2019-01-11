@@ -161,7 +161,46 @@ PS：上面提到的几个字段，都是HTTP协议里面的报文首部的字�
 * 压测不使用，功能测试才使用
 #### SMIME Assertion
 ### Jmeter定时器
+* 定时器仅与采样器关联（如果定时器作用域内没有采样器，定时器失效）
+* 定时器先于采样器执行（如果定时器作用域有多个定时器，那么所有定时器会在*每个*采样器前执行）
+* 用法：
+    * 单独作用某个采样器，定时器作为采样器的子测试元素
+    * 定时器在采样器之后执行，将定时器添加到下一个采样器之下；或者添加为Test action 采样器的子测试元件
+#### 固定采样器（Constant Timer）
+请求之间固定相同时长，单位毫秒
+#### 高斯随机定时器（Gaussion Random Timer）
+![](https://images2015.cnblogs.com/blog/983980/201610/983980-20161027205705890-1252058164.png)
+如需要每个线程在请求前按随机时间停顿，那么使用这个定时器，上图表示暂停时间会分布在100到400之间，计算公式参考：Math.abs((this.random.nextGaussian() * 300) + 100)
+#### 均匀随机定时器（Uniform Random Timer）
+* 和高斯随机定时器的作用差异不大，区别在于延时时间在指定范围内且每个时间的取值概率相同，每个时间间隔都有相同的概率发生，总的延迟时间就是随机值和偏移值之和。   
+    （1）Random Delay Maximum(in milliseconds):随机延迟时间的最大毫秒数   
+    （2）Constant Delay Offset(in milliseconds):暂停的毫秒数减去随机延迟的毫秒数
+#### 固定吞吐量定时器（Constant Throughput Timer）
+![](https://images2015.cnblogs.com/blog/983980/201610/983980-20161027210702765-184084902.png)
+* 可以让JMeter以指定数字的吞吐量（即指定TPS，只是这里要求指定每分钟的执行数，而不是每秒）执行。
+* 吞吐量计算的范围可以为指定为当前线程、当前线程组、所有线程组等范围，并且计算吞吐量的依据可以是最近一次线程的执行时延。这种定时器在特定的场景下，还是很有用的。
+#### 同步定时器（Synchronizing Timer）
+* 这个定时器和loadrunner当中的集合点（rendezvous point）作用相似，其作用是：阻塞线程，直到指定的线程数量到达后，再一起释放，可以瞬间产生很大的压力（人多力量大- -哈哈！）   
+（1）Number of Simulated Users to Group by:模拟用户的数量，即指定同时释放的线程数数量   
+（2）Timeout in milliseconds:超时时间，即超时多少毫秒后同时释放指定的线程数   
+#### BeanShell定时器（BeanShell Timer）
+![](https://images2015.cnblogs.com/blog/983980/201610/983980-20161027212020296-1312304031.png)
+* 这个定时器，一般情况下用不到，但它可以说是最强大的，因为可以自己变成实现想要做的任何事情，例如：希望在每个线程执行完等待一下，或者希望在某个变量达到指定值的时候等待一下。
+##### BeanShell是一种松散类型的脚本语言（这点和JS类似），一种完全符合java语法的java脚本语言，并且又拥有自己的一些语法和方法。
+传送门（另外一位博客园作者的博客）：http://www.cnblogs.com/jssy/archive/2006/10/23/537101.html    
+#### 泊松随机定时器（Poisson Random Timer）
+这个定时器在每个线程请求之前按随机的时间停顿，大部分的时间间隔出现在一个特定的值，总的延迟就是泊松分布值和偏移值之和。
+#### JSR223定时器（JSR223 Timer）   
+在jemter最新的版本中，新增了这个定时器，可以这么理解，这个定时器相当于BeanShell定时器的“父集”，它可以使用java、JavaScript、beanshell等多种语言去实现你希望完成的事情；   
+传送门（关于JSR223）：http://wenku.baidu.com/link?url=GUFnww9nb_1D6MlFd1YksYrNVk1NXF74ov8kJL06MmqVdmH_Q9v4YnWK-_gZ-04zL4QEqD9VN48OrXi4JyXpxosNZd8LBfIWhyhhxgUbrAC
+#### BSF定时器（BSF Timer）
+BSF Timer，也是jmeter新的版本中新增的定时器，其使用方法和JSR223 Timer很相似，只需要在jmeter的lib文件夹导入其jar包，就可以支持脚本语言直接访问Java对象和方法的一定时器。   
+传送门（BSF）：http://baike.baidu.com/link?url=0RRkO1WqT1SdaXIzohqnEU8lcilpc_Sqwy7HtfpzCdCX1kyyLC5qttpF8jayTWFZi_tCbFbzMEw8FxHFYnIGYK
 ### Jmeter前置处理器
+修改作用域范围内的采样器
+#### HTML链路解析器（HTML Link Parser）
+* 此处理器为HTML链接解析器，用于从前一个sampler返回的html页面中按照规则解析链接和表单，再根据此处理器所在的sampler中的规则进行匹配修改，而后该sampler会执行； 
+
 ### Jmeter后置处理器
 ### Jmeter采样器
 ### Jmeter其他测试元件
