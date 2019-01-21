@@ -198,13 +198,110 @@ BSF Timer，也是jmeter新的版本中新增的定时器，其使用方法和JS
 传送门（BSF）：http://baike.baidu.com/link?url=0RRkO1WqT1SdaXIzohqnEU8lcilpc_Sqwy7HtfpzCdCX1kyyLC5qttpF8jayTWFZi_tCbFbzMEw8FxHFYnIGYK
 ### Jmeter前置处理器
 修改作用域范围内的采样器
-#### HTML链路解析器（HTML Link Parser）
-* 此处理器为HTML链接解析器，用于从前一个sampler返回的html页面中按照规则解析链接和表单，再根据此处理器所在的sampler中的规则进行匹配修改，而后该sampler会执行； 
-
+#### HTML链路解析器（HTML Link Parser）?
+* 此处理器为HTML链接解析器，用于从前一个sampler返回的html页面中按照规则解析链接和表单，再根据此处理器所在的sampler中的规则（Perl型正则表达式）进行匹配修改，而后该sampler会执行；
+#### HTTP URL重写修饰符 
+* HTTP URL重写修改器，此处理器与HTTP Link Parser类似，但专用于使用url重写来存储sessionId而非cookie的http request，在线程组级别添加此修改器则应用于所有sample，若为单个sample添加则只适用该sample；
+* 用途：使用URL重写来代替cookie的web系统 
+* 参数配置：     
+  Session Argument Name：会话参数名称，用于搜索sessionId，其他sample也可通过此参数来 调用其获取的sessionId；    
+  Path Extension：路径扩展，如url添加了分号作为分割，则勾选此项；    
+  Do not use equals in path extension：用于url不用等号来分割key和value的类型；    
+  Do not use questionmark in path extension：用于不带？的类型；    
+  Cache Session Id?：勾选此项则会存储在其挂载的sample上获取到的sessionId供后边的其他sample使用；     
+  URL Encode：是否使用url编码；     
+#### User Parameters
+* 用户参数，用于做几组参数给线程组的各个线程使用，如果线程数多于用户参数组数，则多出来的线程则从第一组用户参数开始依次调用参数组；
+* 参数配置：    
+  Name：此前置处理器的名称；    
+  Update Once Per Iteration：标识是否每轮迭代更新一次元素；   
+#### JDBC PreProcessor
+* 数据库预处理器，用于在sample开始前查询数据库并获取一些值； 
+#### RegEx User Parameters
+* 正则表达式，使用正则表达式为从另一个HTTP请求中提取的HTTP参数指定动态值 
+* 参数配置：    
+  name：此前置处理器名称；      
+  Regular Expression Reference Name：调用的正则表达式提取器中的引用名称；    
+  Parameter names regexp group number：用于提取参数名称的正则表达式的组编号；    
+  Parameter values regex group number：用于提取参数值的正则表达式的组编号；   
+####  Sample Timeout
+* 超时器，用于设定sample的超时时间，如果完成时间过长，此预处理器会调度计时器任务以中断样本； 
+#### JSR223 PreProcessor
+JSR223预处理器，用于调用脚本； 
+#### BeanShell PreProcessor
 ### Jmeter后置处理器
+#### 正则表达式提取器(regular expression extractor)
+* 使用正则表达式提取请求中的内容。
+#### CSS/Jquery Extractor 
+#### XPath Extractor
+* 可以从结构化响应中提取值
+#### Result Status Action Handler
+* 采样失败时执行操作，停止线程或整个测试
+#### BeanShellPostProcessor
+* 采样后执行代码
+#### BSF PostProcessor
+* 采样后执行BSF脚本
+#### JSR223 PostProcessor
+* 采样后执行JSR223脚本
+#### JDBC PostProcessor
+* 向数据库发送JDBC请求
 ### Jmeter采样器
+#### FTP Request
+* 和ftp服务器进行文件传输
+#### HTTP Request
+#### JDBC Request
+#### JAVA Request
+#### SOAP/xml-rpc 请求
+#### web service(soap) 请求
+#### LDAP 扩展请求
+#### BeanShell采样器
+>BeanShell是一个小型嵌入式Java源代码*解释器*，具有对象脚本语言特性，能够动态地执行标准JAVA语法，并利用在JavaScript和Perl中常见的的松散类型、命令、闭包等通用脚本来对其进行拓展。BeanShell不仅仅可以通过运行其内部的脚本来处理Java应用程序，还可以在运行过程中动态执行你java应用程序执行java代码。因为BeanShell是用java写的，运行在同一个虚拟机的应用程序，因此可以自由地引用对象脚本并返回结果。
+* BeanShell特点
+    * 完整的java语法的动态执行，java代码片段，以及松散类型的java和其他脚本
+    * 透明地访问所有java对象和API
+    * 运行在四种模式：命令行，控制台，小程序，远程会话服务器。
+    * 可以在安全约束的环境中工作
+    * 编译器是一个小于150K的jar文件
+* Jmeter的应用
+    * Jmeter中的BeanShell主要有：定时器BeanShell Timer、前置处理器BeanShell PreProcessor、采样器BeanShell Sampler、、后置处理器BeanShell PostProcessor、断言BeanShell、断言监听器BeanShell Listener。
+* eg:[采样器实例](https://www.cnblogs.com/wangxiaoqun/p/6737395.html)
+* Jmeter中使用场景
+    * 1>自定义函数   
+        在BeanShell中编写自定义函数，直接利用脚本编译器编译
+    * 2>调用外部java文件
+        如果我们已经有现成的java源文件，可以在BeanShell中直接编写和java引用外部文件时一样的语句来调用java外部文件。      
+        ![](https://upload-images.jianshu.io/upload_images/2067537-b361253c93e62e57.png?imageMogr2/auto-orient/strip)
+    * 3>导入外部jar包
+        * 从上面两个场景可以知道，在BeanShell中引用外部文件和java是一样一样的，因此此处就不进行过多的描述，步骤为：
+        * 在eclipse写好代码，然后把该类打成jar包（在类上点击右键->Export->jar file）
+        * 把jar包放到jmeter目录\apache-jmeter-2.13\lib\ext下
+        * 打开jmeter,添加一个http sampler，在sampler下添加一个BeanShell Sampler
+        * 在BeanShell中的头文件中导入该jar包，例import testmail.src.hyq.utils.*
+#### BSF采样器
+#### JSR223采样器
+#### TCP采样器
+#### JMS publisher
+#### JMS subscriber
+#### JMS point-to-point
+#### Junit 请求
+#### Mail Read sampler
+#### Test Action
+#### SMTP Sampler
+#### 操作系统集成采样器
+#### MongoDBScript
 ### Jmeter其他测试元件
 #### Test Plan
+#### 线程组
+#### SSL管理器
+#### Property Display
+* 展示修改系统或jmeter属性值
+#### Debug Sampler
+* 产生包含Jmeter属性和变量的采样，在监听器中展示
+#### setUp Thread Group
+* 在常规线程组执行之前执行
+#### tearDown Thread Group
+* 在常规线程组执行之后执行
+
 
 
      
