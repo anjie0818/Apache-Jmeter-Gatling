@@ -190,13 +190,23 @@
     * -c: 采集次数
     * -t: 输出最销号资源的进程 
 * 使用：采集频率+采集次数=性能测试时间
+* eg:nmon -f -F /usr/local/blog/result.nmon -s 3 -c 100 
 * nmon结果数据分析工具--nmon_analyzer(需要使用excel的宏，wps安装插件)
     * 下载：ibm网址
     * 重点sheet页
         * SYS_SUMM  系统汇总页，包含cpu占有率、磁盘、io变化情况等信息
+            * 系统汇总,蓝线为cpu占有率变化情况,粉线为磁盘IO的变化情况；
         * AAA 关于操作系统以及nmon本身的一些信息
         * CPUnn 显示执行时间内cpu占用的情况
         * CPU_ALL 所有CPU概述，显示所有CPU平均占用情况
+            ```text
+              a. User%，用户模式下执行的程序所使用的CPU百分比
+              b. Sys%，内核模式下执行的程序所使用的CPU百分比
+              c. Wait%，等待 IO 所花的时间百分比
+              d. Idel%，CPU的空闲时间百分比，此值和User%，Sys%，Wait%之和等于1
+              e. CPU%，CPU总体占用情况，这个值通常等于User%+Sys%+Wait%
+              f. CPUs，CPU核数，即操作系统是多少C的
+            ```
         * CPU_SUMM 每一个CPU在执行时间内的占用情况 
         * DGBUSY 磁盘组每个hdisk设备平均占用情况
         * DGREAD 每个磁盘组的平均读情况
@@ -204,8 +214,40 @@
         * DGSIZE 每个磁盘组的平均读写情况
         * DGXFER 每个磁盘组的I/O每秒情况
         * MEM 内存相关信息、使用、空闲内存大小等
+            ```text
+              a. memtotal，物理内存总大小
+              
+              b. swaptotal，虚拟内存（即交换空间）的总大小
+              
+              c. memfree，剩余物理内存大小
+              
+              d. swapfree，剩余虚拟内存大小
+              
+              e. cached，已占用的文件系统缓存大小，由物理内存分配
+              
+              f. buffers，文件系统缓冲区大小
+              
+              g. swapcached，虚拟内存中已分配出来的内存大小
+              
+              h. inactive，最近不常使用的内存大小
+            ```
         * NET 显示系统中每个网络适配器的数据传输速率（千字节/秒）
+            ```text
+                  a. Total-Read，网络适配器每秒接收的数据包总大小，单位是KB/sec
+                  
+                  b. Total-Write (-ve)，网络适配器每秒发送的数据包总大小，单位是KB/sec
+                  
+                  c. eth0-total，网络适配器每秒接收和发送的数据包总大小，单位是KB/sec
+            ```
         * PAGE 本sheet统计相关页信息的记录
+        * DISK_SUM：总体disk读、写以及I/O操作
+            ```text
+              a. Disk Read KB/s ，每个磁盘执行采样数据（磁盘设备的读速率）
+              b. Disk Write KB/s ，每个磁盘执行采样数据（磁盘设备的写速率）
+              c. IO/sec，每秒钟输出到物理磁盘的传输次数
+            ```
+        * DISKBUSY：每个hdisk设备平均占用情况   单位为%（百分比）
+        
 #### linux下定时任务--crontab
 * 性能测试使用场景：结合nmon实现定时定点监控服务器性能
 * 来源：linux系统是由cron这个系统服务来控制的，在系统中包含很多计划性任务。用户可以自定义计划任务，so-->crontab
@@ -223,9 +265,12 @@
 * 使用：
     * crontab -e:进入编辑页面
     * crontab -l：查看定时任务配置  date查看当前时间
+    * crontab -r : 删除 crontab 文件。
+    * crontab -ir : 删除 crontab 文件前提醒用户。
     * 基本格式：minute hour day month week command
         * minute:00-59、每分钟用 * 或者 */1标识
-        * hour:0-23(0表示0点)
+        * hour:
+        -23(0表示0点)
         * day：日期01-31
         * month：01-12
         * week：0-6（0表示周末）
