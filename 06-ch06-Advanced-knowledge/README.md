@@ -166,6 +166,13 @@
     * 数据多：使用文件存取
 * 启用Debug日志
     * what's this node? --查看GUI和测试元件的类名
+* jmeter解决乱码问题
+    * 采样器中设置
+    * jmeter.properties配置文件中设置
+    * 添加后置beanshell处理器：prev.setDataEncoding("utf-8")
+* 通过CSV Data Set Config或者_StringFromFile函数来参数化你的请求，需要特别注意当参数为纯数字时，jmeter会默认将其识别成int型数据，说明jmeter并不是默认以String类型对数据进行读取的:范围-2147483648到2147483647,如果超出这个范围（例如2147483648这个数字）：jmeter控制台则会抛出如下异常：jmeter.util.BeanShellInterpreter: Error invoking bsh method: eval    Parse error at line 14, column 181 : Error or number too big for integer type: 2147483648,如果要解决此问题，可在超出范围-2147483648到2147483647的数据前加上字母,或者使用beenshell进行参数化。
+    * 注意：1、在BeenShell中引用外部参数需要以String类型的方式引用：例如："${user}"（ps需要加上双引号）
+### Jmeter扩展组件实现方式
     
         
 

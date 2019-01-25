@@ -3,6 +3,7 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/.idea/Apache-Jmeter-Gatling.iml" filepath="$PROJECT_DIR$/.idea/Apache-Jmeter-Gatling.iml" />
+      <module fileurl="file://$PROJECT_DIR$/jmeterMaven/jmeterMaven.iml" filepath="$PROJECT_DIR$/jmeterMaven/jmeterMaven.iml" />
     </modules>
   </component>
 </project>
