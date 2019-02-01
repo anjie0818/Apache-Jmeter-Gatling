@@ -255,7 +255,7 @@ gui.quick_9=ViewResultsFullVisualizer
 #---------------------------------------------------------------------------
 
 # Remote Hosts - comma delimited
-remote_hosts=47.98.132.196:1099,127.0.0.1:7890,172.16.27.215:35746
+remote_hosts=127.0.0.1:7890,127.0.0.1:1099
 #remote_hosts=localhost:1099,localhost:2010
 
 # RMI port to be used by the server (must start rmiregistry with same port)
@@ -1059,7 +1059,7 @@ csvdataset.file.encoding_list=UTF-8|UTF-16|ISO-8859-15|US-ASCII
 #httpsampler.user_defined_methods=VERSION-CONTROL,REPORT,CHECKOUT,CHECKIN,UNCHECKOUT,MKWORKSPACE,UPDATE,LABEL,MERGE,BASELINE-CONTROL,MKACTIVITY
 
 # The encoding to be used if none is provided (default ISO-8859-1)
-sampleresult.default.encoding=UTF-8
+sampleresult.default.encoding=GBK
 
 # CookieManager behaviour - should cookies with null/empty values be deleted?
 # Default is true. Use false to revert to original behaviour

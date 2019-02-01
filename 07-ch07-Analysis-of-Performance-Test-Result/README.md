@@ -280,12 +280,133 @@
             - 代表从start-end   
             , 代表并列多个值
 
-
-
-
-
-
-
+## 数据库性能测试结果分析
+### 数据库常用架构
+#### 一主多从
+![](../images/一主多从.png)
+* 优点：分担单库的压力；缺点：读写延时
+#### 双击热备
+* 优点：类似负载均衡vip指向会变
+* 原理：master将改变记录到二进制文件中->slaver拷贝日志文件到中继器（relog）-slaver模拟relog中的日志文件实现数据同步
+![](../images/双机热备.png)
+### 数据库分库分表的设计方法
+#### 拆分原因
+单表/库数据量太大
+硬件不能升级或无法升级
+#### 方案
+* 业务拆分
+![](../images/业务.png)
+* 垂直拆分
+![](../images/垂直.png)
+* 水平拆分 
+![](../images/水平.png)
+### 数据库性能测试Mysql篇
+#### 主流分支
+MariaDb：Mysql之父widenius创建，目标替换Mysql    
+                 兼容Mysql，对于开发着来说感知不到变化    
+                 免费开源    
+### mysql数据库监控指标
+* QPS：每秒查询数量   
+show global status like ‘Question%’   
+TPS: Tranaction per seconds=(Com_commit+Com_rollback)/seconds   
+show global status like ‘Com_commit’   
+show global status like ‘Com_rollback’   
+* 线程连接数    
+show global status like 'Max_used_connections’    
+show global status like ’Threads%’    
+* 最大连接数   
+show variables like ‘max_connections’    
+【注】使用连接数接近最大连接数，会报超出连接的错误     
+* Query Cache    
+查询缓存用于select的查询结果（没有insert和update）     
+下次接收到相同的查询请求时，不再执行处理而是直接使用缓存中的结果    
+适用于大量查询，很少改变表的数据     
+设置缓存：修改my.cof文件     
+                  将query_cache_size设置为具体的大小，最好时1024的配数，参考值32M      
+增加一行：query_cache_type=0/1/2      
+                   1 ：缓存所有的结果，除非select语句使用sql_no_cache禁用缓存     
+                   2：只缓存select语句中通过sql_cache指定需要缓存的查询     
+* query cache命中率    
+show status like ‘Qcache%’    
+Query_cache_hits=(Qcahce_hits/(Qcache_hits+Qcache_inserts))*100%      
+* 锁定状态    
+show global status like ‘%lock%’      
+Table_locks_waited/Table_locks_immediate 值越大代表表锁造成的阻塞越严重      
+Innoda_row_lock_waits innodb行锁，太大可能时间隙锁造成     
+* 主从延时    
+show slave status     
+### mysql慢查询工作原理及操作
+* 定义    
+执行速度超过定义时间的查询    
+不同系统定义不同的慢查询指标     
+* 开启    
+slow_query_log=1    
+slow_query_log_file=/usr/local/mysql.log    
+long_query_time=1：慢查询阈值，当查询时间多于设定的阈值时，记录日志     
+    编辑/etc/my.cnf，在[mysqld]域中添加    
+    开启：slow_query_log=1    
+    日志路径：slow_query_log_file= 自定义    
+    时长：long_query_time=1     
+    未使用索引的查询也被记录到慢查询日志中：log_queries_not_using_indexes=1     
+查看是否开启慢查询：show variables like '%slow_query_log%’;     
+开启慢查询：set global slow_query_log=1;      
+【注意】使用set global slow_query_log=1开启了慢查询日志只对当前数据库生效，MySQL重启后则会失效。如果要永久生效，就必须修改配置文件my.cnf（其它系统变量也是如此）     
+连接mysql:mysql -uroot -p1—进入控制台     
+重启mysql:service mysqld stop         
+* 日志分析    
+    命令：mysqldumpslow     
+        -s 排序方式
+                c 访问计数    l 锁定时间。  r 返回记录。t 查询时间      
+                al 平均锁定时间 ar 平均返回记录数  at 平均查询时间       
+        -t top n的意思返回前多少条数据      
+        -g 后边正则匹配，大小写不敏感        
+实例：mysqldumpslow -s r -t 10 slow.log（得到返回记录集最多的10个sql）    
+           mysqldumpslow -s c -t 10 slow.log（得到访问次数最多的10个sql）     
+           mysqldumpslow -s t -t 10 -g ”left join" slow.log（得到按照时间排序的前10条里面含有左连接的查询语句）      
+### SQL的分析与调优方法
+#### sql语句性能分析
+* explain + sql     
+    * id:select识别符，代表语句的执行顺序，在select嵌套查询中会不相同        
+        数字越大越先执行，相同就顺序执行       
+    * select_type          
+        Simple 表示不需要union操作或不包含子查询的简单select语句      
+                    有连接查询时，外层的查询为simple，且只有一个      
+        primary：需要union或包含子查询的select，位于最外层的查询单位为primary，且只有一个    
+        union     
+        dependent union     
+        union result     
+        subquery     
+        dependent subquery     
+        derived      
+    * table     
+    显示查询表名称     
+    <>代表中间表          
+    * type******直观反应sql的重要性
+    这是一个非常重要的参数，连接类型，常见的有：all , index , range , ref , eq_ref , const , system , null 八个级别。
+    性能从最优到最差的排序：system > const > eq_ref > ref > range > index > all
+    对 java 程序员来说，若保证查询至少达到 range 级别或者最好能达到 ref 则算是一个优秀而又负责的程序员。
+    all：（full table scan）全表扫描无疑是最差，若是百万千万级数据量，全表扫描会非常慢。
+    index：（full index scan）全索引文件扫描比 all 好很多，毕竟从索引树中找数据，比从全表中找数据要快。
+    range：只检索给定范围的行，使用索引来匹配行。范围缩小了，当然比全表扫描和全索引文件扫描要快。sql 语句中一般会有 between，in，>，< 等查询。
+    ref：非唯一性索引扫描，本质上也是一种索引访问，返回所有匹配某个单独值的行。比如查询公司所有属于研发团队的同事，匹配的结果是多个并非唯一值。
+    eq_ref：唯一性索引扫描，对于每个索引键，表中有一条记录与之匹配。比如查询公司的 CEO，匹配的结果只可能是一条记录，
+    const：表示通过索引一次就可以找到，const 用于比较 primary key 或者 unique 索引。因为只匹配一行数据，所以很快，若将主键至于 where 列表中，MySQL 就能将该查询转换为一个常量。
+    system：表只有一条记录（等于系统表），这是 const 类型的特列，平时不会出现，了解即可
+#### mysql索引的概念和作用
+* 类型
+    * 主键：特殊唯一索引，不允许空
+    * 全文：fulltext，适用于myisam存储引擎
+            数据类型：char/varchar/text   
+            原理：match() against()   
+    * 唯一:索引列必须有值，可以空
+    * 组合:多列索引，好处：比分别创建多个单列索引快
+    * 普通：没有限制
+### mysql实时监控
+orzdba
+### mysql集群监控方案(天兔 Lepus)
+* 支持MySQL、Oracle、SQLServer、MongoDB、Redis等数据库的基本监控和告警
+* MySQL已经支持复制监控、慢查询分析和定向推送等高级功能
+* Lepus无需在每台数据库服务器部署脚本或Agent，只需要在数据库创建授权帐号后，即可进行远程监控，适合监控数据库服务器较多的公司和监控云中数据库。
 
 ## Jmeter性能测试结果分析
 ### 分析性能测试结果
