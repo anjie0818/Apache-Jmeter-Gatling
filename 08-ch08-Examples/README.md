@@ -50,7 +50,16 @@
             -o 用于存放html报告的目录（目录要为空，不然报错）
 ```
 * jmeter -n -t  JMeter 测试脚本文件 -l 录结果的文件 -e -o html报告的目录
+* 运行脚本
+sh /home/icode/local/apache-jmeter-5.1.1/bin/jmeter.sh -n -t /home/icoding/jmx/icoding_test.jmx 【-r远程启动】-l /home/icoding/jtl/icoding_test.jtl
+* 生成报告
+sh /home/icode/local/apache-jmeter-5.1.1/bin/jmeter.sh -g  /home/icoding/jtl/icoding_test.jtl -o /home/icoding/report
 * linux文件赋权：chmod 777 xxx.jmx
+* 打包
+    * 压缩
+tar -czvf test.tar.gz a.c   //压缩 a.c文件为test.tar.gz
+    * 解压缩
+tar -xzvf test.tar.gz 
 * 远程拷贝(内网地址)：
     * scp -r /usr/local/software/jdk-8u141-linux-x64.tar.gz root@47.98.132.196:/usr/local/software
     * scp -r /usr/local/software/jmeter/apache-jmeter-4.0.tgz root@172.18.230.233:/usr/local/software/jmeter
